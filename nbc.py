@@ -1,5 +1,6 @@
-import pickle
-from math import log
+import pickle # Saving a trained model
+from math import log # Using log probabilities
+import time # timeing the training.
 
 class NBC:
     def __init__(self, documents = None):
@@ -8,20 +9,29 @@ class NBC:
         self.fc = {} # Class frequencies
         self.fw = {} # Word per Class frequencies
         self.pc = {} # Class probabilities
-        self.pw = {} # Word per CLass probabilities
+        self.pw = {} # Word per Class probabilities
         self.num_documents = 0
+        self.num_tokens = 0
         self.vocabulary = set()
 
         if documents:
             self.train(documents)
 
-    def train(self, documents, k = 1):
+    def train(self, documents, k = 1, class_k = 'class', words_k = 'words'):
         """ Requires a dicts with tokenized, normalized and space seperated words and a gold standard class """
-        for doc in documents:
-            self.num_documents += 1
+        self.num_documents = len(documents)
 
+        # STATUS PRINTING
+        print('Started training on ' + str(self.num_documents) + ' documents...')
+        start = time.time()
+        printed_75 = False
+        printed_50 = False
+        printed_25 = False
+        docs_left = self.num_documents
+        #
+        for doc in documents:
             # Gather classes
-            c = doc['class']
+            c = doc[class_k]
             if c not in self.classes:
                 self.classes.add(c)
                 self.fc[c] = 1
@@ -32,8 +42,8 @@ class NBC:
                 self.fc[c] += 1
 
             # Gather frequencies for words
-            for word in doc['words'].split():
-
+            for word in doc[words_k]:
+                self.num_tokens += 1
                 if word not in self.vocabulary:
                     self.vocabulary.add(word)
 
@@ -42,6 +52,21 @@ class NBC:
                         self.fw[klass][word] = k
                 self.fw[c][word] += 1
 
+            # Status printing
+            docs_left -= 1
+            if round(docs_left/self.num_documents * 100) == 75 and not printed_75:
+                print('{0:.3f}s\t75% left...'.format(time.time() - start))
+                printed_75 = True
+            elif round(docs_left/self.num_documents * 100) == 50 and not printed_50:
+                print('{0:.3f}s\t50% left...'.format(time.time() - start))
+                printed_50 = True
+            elif round(docs_left/self.num_documents * 100) == 25 and not printed_25:
+                print('{0:.3f}s\t25% left...'.format(time.time() - start))
+                printed_25 = True
+
+        print('{0:.3f}s\t0% left...'.format(time.time() - start))
+        print('Calculating probabilities...')
+        #
         # Frequencies gathered
         # Time to do probability to them
         for c in self.classes:
@@ -56,6 +81,7 @@ class NBC:
 
             # Calculate probability for class itself
             self.pc[c] = log(self.fc[c]/self.num_documents)
+        print('done.')
 
     def classify(self, document):
         """ Classify the document """
@@ -80,12 +106,12 @@ class NBC:
         """ What should be done for unknown words? """
         return 0
 
-    def confusion_matrix(self, documents, baseline = None):
+    def confusion_matrix(self, documents, baseline = None, class_k = 'class', words_k = 'words'):
         """ Builds a confusion matrix for the passed documents, baseline could be set to a class"""
         matrix = {gold:{pred:0 for pred in self.classes} for gold in self.classes}
         for doc in documents:
-            pred = self.classify(doc['words']) if not baseline else baseline
-            gold = doc['class']
+            pred = self.classify(doc[words_k]) if not baseline else baseline
+            gold = doc[class_k]
             matrix[gold][pred] += 1
         return matrix
 
@@ -125,14 +151,14 @@ class NBC:
         with open(filename, 'rb') as f:
             return pickle.load(f)
 
-if __name__ == '__main__':
-    documents = [
-        {'class':'A','words':'Hej jag heter knasen'},
-        {'class':'B','words':'Nej du är knasen'},
-        {'class':'B','words':'Alberta mahogany bordsben'},
-        {'class':'A','words':'Sicket bordsben du är'},
-        {'class':'A','words':'du är inget bordsben'},
-        {'class':'B','words':'Herre jisses kors vilken knasen'}
-    ]
-    a = NBC(documents)
-    print(a.classify('jisses vad du är bordsben'.split()))
+    @classmethod
+    def p_matrix(cls, matrix):
+        classes = matrix.keys()
+        for c in classes:
+            print('\t' + c, end='')
+        print('')
+        for outer_c in classes:
+            print(outer_c, end='')
+            for inner_c in classes:
+                print('\t' + str(matrix[outer_c][inner_c]), end='')
+            print('')
