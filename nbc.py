@@ -3,7 +3,7 @@ from math import log # Using log probabilities
 import time # timeing the training.
 
 class NBC:
-    def __init__(self, documents = None):
+    def __init__(self, documents = None, k = 1, class_k = 'class', words_k = 'words'):
         """ Initializes NBC and immediately trains the model if documents are passed"""
         self.classes = set() # Available classes
         self.fc = {} # Class frequencies
@@ -15,21 +15,25 @@ class NBC:
         self.vocabulary = set()
 
         if documents:
-            self.train(documents)
+            self.train(documents, k = k, class_k = class_k, words_k = words_k)
 
     def train(self, documents, k = 1, class_k = 'class', words_k = 'words'):
-        """ Requires a dicts with tokenized, normalized and space seperated words and a gold standard class """
-        self.num_documents = len(documents)
+        """
+        Requires a dicts with tokenized, normalized and space seperated words and a gold standard class
+        It's possible to train it again and again and again.
+        """
+        num_documents_train = len(documents)
 
         # STATUS PRINTING
-        print('Started training on ' + str(self.num_documents) + ' documents...')
+        print('Started training on ' + str(num_documents_train) + ' documents...')
         start = time.time()
         printed_75 = False
         printed_50 = False
         printed_25 = False
-        docs_left = self.num_documents
+        docs_left = num_documents_train
         #
         for doc in documents:
+            self.num_documents += 1
             # Gather classes
             c = doc[class_k]
             if c not in self.classes:
@@ -54,13 +58,13 @@ class NBC:
 
             # Status printing
             docs_left -= 1
-            if round(docs_left/self.num_documents * 100) == 75 and not printed_75:
+            if round(docs_left/num_documents_train * 100) == 75 and not printed_75:
                 print('{0:.3f}s\t75% left...'.format(time.time() - start))
                 printed_75 = True
-            elif round(docs_left/self.num_documents * 100) == 50 and not printed_50:
+            elif round(docs_left/num_documents_train * 100) == 50 and not printed_50:
                 print('{0:.3f}s\t50% left...'.format(time.time() - start))
                 printed_50 = True
-            elif round(docs_left/self.num_documents * 100) == 25 and not printed_25:
+            elif round(docs_left/num_documents_train * 100) == 25 and not printed_25:
                 print('{0:.3f}s\t25% left...'.format(time.time() - start))
                 printed_25 = True
 
