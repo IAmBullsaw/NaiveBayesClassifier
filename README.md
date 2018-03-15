@@ -34,3 +34,11 @@ Started training on 12928 documents...
 Calculating probabilities...
 done.
 ```
+
+and also train again and again and again
+```python
+nbc = NBC()
+for documents in documents_collection:
+  nbc.train(documents)
+# wait some time ...
+```
