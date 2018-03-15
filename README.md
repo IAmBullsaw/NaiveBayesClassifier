@@ -3,10 +3,12 @@ This is one of those.
 
 It can train on data like this:
 ```python
-[
+documents = [
   {'words':['yada', 'yada', 'yada'], 'class':'yada'},
   {'words':['bla', 'bla', 'bla'], 'class':'bla'}
 ]
+nbc = NBC(documents)
+nbc.save('trainedclassifier.pickle')
 ```
 
 and classify new documents:
@@ -21,3 +23,14 @@ and give reports on:
 * Precision
 * Recall
 * F1 measure
+
+and print during training:
+```
+Started training on 12928 documents...
+0.277s  75% left...
+0.594s  50% left...
+0.931s  25% left...
+1.277s  0% left...
+Calculating probabilities...
+done.
+```
