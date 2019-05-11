@@ -1,23 +1,24 @@
-import pickle # Saving a trained model
-from math import log # Using log probabilities
-import time # timeing the training.
+import pickle  # Saving a trained model
+from math import log  # Using log probabilities
+import time  # timing the training.
+
 
 class NBC:
-    def __init__(self, documents = None, k = 1, class_k = 'class', words_k = 'words'):
+    def __init__(self, documents=None, k=1, class_k='class', words_k='words'):
         """ Initializes NBC and immediately trains the model if documents are passed"""
-        self.classes = set() # Available classes
-        self.fc = {} # Class frequencies
-        self.fw = {} # Word per Class frequencies
-        self.pc = {} # Class probabilities
-        self.pw = {} # Word per Class probabilities
+        self.classes = set()  # Available classes
+        self.fc = {}  # Class frequencies
+        self.fw = {}  # Word per Class frequencies
+        self.pc = {}  # Class probabilities
+        self.pw = {}  # Word per Class probabilities
         self.num_documents = 0
         self.num_tokens = 0
         self.vocabulary = set()
 
         if documents:
-            self.train(documents, k = k, class_k = class_k, words_k = words_k)
+            self.train(documents, k=k, class_k=class_k, words_k=words_k)
 
-    def train(self, documents, k = 1, class_k = 'class', words_k = 'words'):
+    def train(self, documents, k=1, class_k='class', words_k='words'):
         """
         Requires a dicts with tokenized, normalized and space seperated words and a gold standard class
         It's possible to train it again and again and again.
@@ -110,9 +111,9 @@ class NBC:
         """ What should be done for unknown words? """
         return 0
 
-    def confusion_matrix(self, documents, baseline = None, class_k = 'class', words_k = 'words'):
+    def confusion_matrix(self, documents, baseline=None, class_k='class', words_k='words'):
         """ Builds a confusion matrix for the passed documents, baseline could be set to a class"""
-        matrix = {gold:{pred:0 for pred in self.classes} for gold in self.classes}
+        matrix = {gold: {pred: 0 for pred in self.classes} for gold in self.classes}
         for doc in documents:
             pred = self.classify(doc[words_k]) if not baseline else baseline
             gold = doc[class_k]
@@ -142,12 +143,12 @@ class NBC:
         prec = self.precision(matrix, key)
         rec = self.recall(matrix, key)
         total = prec + rec
-        return 2 * ( prec * rec)/ total if total > 0 else float('NaN')
+        return 2 * (prec * rec) / total if total > 0 else float('NaN')
 
     def save(self, filename):
         """ Pickle this model to given filename """
         with open(filename, 'wb') as f:
-            pickle.dump(self,f)
+            pickle.dump(self, f)
 
     @classmethod
     def load(cls, filename):

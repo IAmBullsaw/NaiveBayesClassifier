@@ -2,9 +2,11 @@ from nbc import NBC
 import json
 import sys
 
+
 def read_data(filename):
     with open(filename) as f:
         return json.load(f)
+
 
 def main(training, testing):
     documents = read_data(training)
@@ -25,6 +27,7 @@ def main(training, testing):
     matrix = nbc.confusion_matrix(test_docs)
     NBC.p_matrix(matrix)
     print('Accuracy test data:', nbc.accuracy(matrix))
+
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
